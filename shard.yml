@@ -1,0 +1,13 @@
+name: AgentSmith
+version: 0.1.0
+
+authors:
+  - Georg Gadinger <nilsding@nilsding.org>
+
+targets:
+  AgentSmith:
+    main: src/AgentSmith.cr
+
+crystal: 0.27.0
+
+license: MIT
