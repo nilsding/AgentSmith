@@ -6,7 +6,7 @@ authors:
 
 targets:
   AgentSmith:
-    main: src/AgentSmith.cr
+    main: src/main.cr
 
 crystal: 0.27.0
 
