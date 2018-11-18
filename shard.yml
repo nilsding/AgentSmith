@@ -8,6 +8,12 @@ targets:
   AgentSmith:
     main: src/main.cr
 
+dependencies:
+  crest:
+    github: mamantoha/crest
+  secrets:
+    github: faustinoaq/secrets
+
 crystal: 0.27.0
 
 license: MIT

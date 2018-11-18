@@ -1,0 +1,10 @@
+version: 1.0
+shards:
+  crest:
+    github: mamantoha/crest
+    version: 0.17.0
+
+  secrets:
+    github: faustinoaq/secrets
+    version: 0.1.2
+
