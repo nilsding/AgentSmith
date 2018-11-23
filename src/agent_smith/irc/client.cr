@@ -32,6 +32,22 @@ module AgentSmith
         !(username.empty? && realname.empty?)
       end
 
+      def spawn_matrix_sync
+        raise ArgumentError.new("matrix sync should only be spawned with an active socket") if @client.closed?
+
+        spawn do
+          until @client.closed?
+            begin
+              matrix_sync
+            rescue e
+              Application.logger.warn "error in matrix sync loop: #{e.inspect}"
+              Application.logger.warn "restarting in 3 seconds"
+              sleep 3
+            end
+          end
+        end
+      end
+
       def matrix_sync
         ok, response = @matrix_client.sync(ENV["MATRIX_ACCESS_TOKEN"], timeout: 30000, timeline_limit: 20, since: next_batch)
         unless ok
