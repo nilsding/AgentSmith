@@ -25,8 +25,8 @@ module AgentSmith
 
         private def send_welcome(to client)
           welcome_msgs = [
-            { Codes::RPL_WELCOME,  "Hello from Agent Smith #{AgentSmith::VERSION}." },
-            { Codes::RPL_YOURHOST, "Running on host #{System.hostname}." }
+            {Codes::RPL_WELCOME, "Hello from Agent Smith #{AgentSmith::VERSION}."},
+            {Codes::RPL_YOURHOST, "Running on host #{System.hostname}."},
           ].map do |code, str|
             Message::ServerToClient.new(
               prefix: System.hostname,

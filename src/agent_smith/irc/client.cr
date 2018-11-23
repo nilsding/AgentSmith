@@ -9,14 +9,14 @@ module AgentSmith
       getter client : TCPSocket
 
       property nickname : String = "",
-               username : String = "",
-               realname : String = "",
-               hostname : String = "",
-               # XXX: those should be probably in an own class.  just a POC for now
-               joined_channels = [] of String,
-               channel_topics  = {} of String => String?,
-               channel_map     = {} of String => String,
-               next_batch      = ""
+        username : String = "",
+        realname : String = "",
+        hostname : String = "",
+        # XXX: those should be probably in an own class.  just a POC for now
+        joined_channels = [] of String,
+        channel_topics = {} of String => String?,
+        channel_map = {} of String => String,
+        next_batch = ""
 
       def initialize(@client)
         @hostname = @client.remote_address.address

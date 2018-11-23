@@ -44,25 +44,25 @@ module AgentSmith
               origin_server_ts: Int64,
               sender: String,
               type: String,
-              membership: { type: String, nilable: true },
+              membership: {type: String, nilable: true},
             )
           end
 
           class EventContent
             JSON.mapping(
-              alias: { type: String, nilable: true },
-              topic: { type: String, nilable: true },
-              name: { type: String, nilable: true },
-              body: { type: String, nilable: true },
-              msgtype: { type: String, nilable: true },
-              url: { type: String, nilable: true }
+              alias: {type: String, nilable: true},
+              topic: {type: String, nilable: true},
+              name: {type: String, nilable: true},
+              body: {type: String, nilable: true},
+              msgtype: {type: String, nilable: true},
+              url: {type: String, nilable: true}
             )
           end
 
           class UnreadNotifications
             JSON.mapping(
-              highlight_count: { type: Int32, nilable: true },
-              unread_count: { type: Int32, nilable: true }
+              highlight_count: {type: Int32, nilable: true},
+              unread_count: {type: Int32, nilable: true}
             )
           end
         end

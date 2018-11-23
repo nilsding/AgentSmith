@@ -5,10 +5,10 @@ module AgentSmith
   module IRC
     module Message
       abstract class Base
-        property prefix   : String,
-                 command  : String,
-                 params   : Array(String),
-                 trailing : String
+        property prefix : String,
+          command : String,
+          params : Array(String),
+          trailing : String
 
         abstract def to_msg
 

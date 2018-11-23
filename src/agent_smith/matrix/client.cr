@@ -17,9 +17,9 @@ module AgentSmith
         response = @api["client/r0/login"].post(
           headers: {"Content-Type" => "application/json"},
           form: {
-            :type => "m.login.password",
-            :user => user,
-            :password => password
+            :type     => "m.login.password",
+            :user     => user,
+            :password => password,
           }.to_json
         )
 
@@ -31,16 +31,16 @@ module AgentSmith
       def sync(access_token, timeout = 0, timeline_limit = -1, since = "")
         params = {
           "access_token" => access_token,
-          "timeout" => timeout.to_s
+          "timeout"      => timeout.to_s,
         }
 
         if timeline_limit > 0
           params["filter"] = {
             "room" => {
               "timeline" => {
-                "limit" => timeline_limit
-              }
-            }
+                "limit" => timeline_limit,
+              },
+            },
           }.to_json
         end
 
