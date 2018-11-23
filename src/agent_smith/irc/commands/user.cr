@@ -19,6 +19,8 @@ module AgentSmith
 
           send_welcome to: client
           Motd.call(msg, client)
+
+          start_matrix_sync
         end
 
         private def send_welcome(to client)
@@ -43,9 +45,17 @@ module AgentSmith
           Message::ServerToClient.new(
             prefix: System.hostname,
             command: Codes::RPL_BOUNCE,
-            params: [client.nickname, "NETWORK=AgentSmith"],
+            params: [client.nickname, "NETWORK=AgentSmith", "TOPICLEN=666"],
             trailing: "are supported by this server"
           ).send to: client
+        end
+
+        def start_matrix_sync
+          spawn do
+            loop do
+              client.matrix_sync
+            end
+          end
         end
       end
     end

@@ -6,8 +6,11 @@ require "./entities/*"
 module AgentSmith
   module Matrix
     class Client
+      getter base_url
+
       def initialize(homeserver)
-        @api = Crest::Resource.new(File.join(homeserver, "_matrix"))
+        @base_url = File.join(homeserver, "_matrix")
+        @api = Crest::Resource.new(@base_url)
       end
 
       def login(user, password)
@@ -25,8 +28,11 @@ module AgentSmith
         {false, nil}
       end
 
-      def sync(access_token, timeout = 0, timeline_limit: -1)
-        params = { "timeout" => timeout.to_s }
+      def sync(access_token, timeout = 0, timeline_limit = -1, since = "")
+        params = {
+          "access_token" => access_token,
+          "timeout" => timeout.to_s
+        }
 
         if timeline_limit > 0
           params["filter"] = {
@@ -38,9 +44,10 @@ module AgentSmith
           }.to_json
         end
 
+        params["since"] = since unless since.empty?
+
         response = @api["client/r0/sync"].get(
-          params: params,
-          access_token: access_token
+          params: params
         )
 
         {true, Entities::SyncResponse.from_json(response.body)}

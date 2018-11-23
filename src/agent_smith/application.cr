@@ -23,13 +23,17 @@ module AgentSmith
       ENV["MATRIX_ACCESS_TOKEN"]
     end
 
+    def self.homeserver
+      @@homeserver
+    end
+
     def self.logger
       @@logger ||= Logger.new(
         STDOUT, level: Logger::Severity.parse(ENV.fetch("LOG_LEVEL", "DEBUG"))
       )
     end
 
-    @homeserver = ""
+    @@homeserver = ""
     @port = 6667
 
     def initialize(@argv : Array(String)); end
@@ -40,7 +44,7 @@ module AgentSmith
 
         parser.on("-v", "Increase verbosity level") { @@verbose += 1 }
         parser.on("-s HOMESERVER", "--homeserver HOMESERVER", "Use this matrix homeserver (e.g. https://matrix.org)") do |homeserver|
-          @homeserver = homeserver
+          @@homeserver = homeserver
         end
         parser.on("-p PORT", "--port PORT", "Listen on this port (default: #{@port})") do |port|
           @port = port.to_i
@@ -59,7 +63,7 @@ module AgentSmith
 
       optparser.parse(@argv)
 
-      if @homeserver.empty?
+      if @@homeserver.empty?
         STDERR.puts "error: HOMESERVER was not set"
         STDERR.puts optparser
         exit 1
@@ -67,7 +71,7 @@ module AgentSmith
 
       # TODO: store those things in a database, maybe?
       unless ENV.has_key?("MATRIX_ACCESS_TOKEN")
-        puts "Performing first time login on #{@homeserver}"
+        puts "Performing first time login on #{@@homeserver}"
         print "Username: "
         username = gets
         if username.nil?
@@ -77,7 +81,7 @@ module AgentSmith
         username = username.not_nil!.strip
         password = Secrets.gets("Password: ")
 
-        ok, response = Matrix::Client.new(@homeserver).login(username, password)
+        ok, response = Matrix::Client.new(@@homeserver).login(username, password)
 
         unless ok
           puts "Oopsie woopsie uwu"
