@@ -15,8 +15,9 @@ module AgentSmith
         # XXX: those should be probably in an own class.  just a POC for now
         joined_channels = [] of String,
         channel_topics = {} of String => String?,
-        channel_map = {} of String => String,
-        next_batch = ""
+        channel_map = {} of String => String, # matrix_id => nice_matrix_id
+        next_batch = "",
+        own_events = [] of String
 
       def initialize(@client)
         @hostname = @client.remote_address.address
@@ -131,7 +132,10 @@ module AgentSmith
               next
             end
 
-            # normal urls
+            # do not resend own messages to the channel
+            next if own_events.delete(event.event_id)
+
+            # normal messages
             event.content.body.not_nil!.each_line(chomp: false) do |line|
               Message::ServerToClient.new(
                 prefix: matrix2ident(event.sender),

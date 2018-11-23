@@ -41,6 +41,7 @@ module AgentSmith
           class Event
             JSON.mapping(
               content: EventContent,
+              event_id: String,
               origin_server_ts: Int64,
               sender: String,
               type: String,
