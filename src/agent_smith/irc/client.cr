@@ -58,7 +58,8 @@ module AgentSmith
 
         response = response.not_nil!
         response.rooms.join.each do |matrix_room_name, room|
-          room_name_event = room.state.find_event("m.room.canonical_alias")
+          room_events = room.state.events + room.timeline.events
+          room_name_event = find_event(room_events, "m.room.canonical_alias")
           room_name = ""
 
           if room_name_event
@@ -74,20 +75,24 @@ module AgentSmith
               joined_channels << room_name
             end
 
-            send_channel_topic(room, room_name)
+            send_channel_topic(room_events, room_name)
           end
 
           next unless channel_map.has_key?(matrix_room_name)
           room_name = channel_map[matrix_room_name]
 
-          send_channel_history(room, room_name)
+          send_channel_history(room_events, room_name)
         end
 
         @next_batch = response.next_batch
       end
 
-      private def send_channel_topic(room, room_name)
-        channel_topic_event = room.state.find_event("m.room.topic")
+      private def find_event(events : Array(Matrix::Entities::SyncResponse::Room::Event), event_type)
+        events.find { |event| event.type == event_type }
+      end
+
+      private def send_channel_topic(room_events, room_name)
+        channel_topic_event = find_event(room_events, "m.room.topic")
 
         unless channel_topic_event
           unless channel_topics.fetch(room_name, "") == nil
@@ -114,7 +119,7 @@ module AgentSmith
         channel_topics[room_name] = channel_topic
       end
 
-      private def send_channel_history(room, room_name)
+      private def send_channel_history(room_events, room_name)
         Message::ServerToClient.new(
           prefix: "*AgentSmith!AgentSmith@#{System.hostname}",
           command: "PRIVMSG",
@@ -122,7 +127,7 @@ module AgentSmith
           trailing: "*** Playing back messages..."
         ).send to: client if next_batch.empty?
 
-        room.timeline.events.each do |event|
+        room_events.each do |event|
           case event.type
           when "m.room.message"
             # file attachments

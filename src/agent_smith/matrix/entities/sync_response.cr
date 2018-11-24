@@ -26,10 +26,6 @@ module AgentSmith
             JSON.mapping(
               events: Array(Event)
             )
-
-            def find_event(event_type)
-              events.find { |event| event.type == event_type }
-            end
           end
 
           class Timeline
