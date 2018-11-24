@@ -151,6 +151,9 @@ module AgentSmith
             # do not resend own messages to the channel
             next if own_events.delete(event.event_id)
 
+            # redacted messages do not have a body
+            next unless event.content.body
+
             # normal messages
             event.content.body.not_nil!.each_line(chomp: false) do |line|
               Message::ServerToClient.new(
