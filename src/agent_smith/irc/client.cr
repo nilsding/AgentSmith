@@ -170,7 +170,7 @@ module AgentSmith
                 prefix: matrix2ident(event.sender),
                 command: "JOIN",
                 trailing: room_name
-              )
+              ).send to: client
             else
               Application.logger.warn "unhandled m.room.member membership type #{event.membership.inspect}"
             end
