@@ -4,6 +4,8 @@ module AgentSmith
   module IRC
     module Commands
       class Privmsg < Base
+        KNOWN_CTCP_TYPES = %w[ACTION]
+
         def call
           unless msg.params.size == 1
             send_need_more_params
@@ -13,6 +15,21 @@ module AgentSmith
           return if msg.trailing.strip.empty?
 
           target = msg.params.first
+
+          text = msg.trailing
+          is_ctcp = text.starts_with?("\x01") && text.ends_with?("\x01")
+          ctcp_type = ""
+
+          if is_ctcp
+            text = text.strip("\x01")
+            ctcp_type, text = text.split(" ", 2)
+            ctcp_type = ctcp_type.upcase
+
+            unless KNOWN_CTCP_TYPES.includes?(ctcp_type)
+              Application.logger.warn "PRIVMSG: unknown ctcp type #{ctcp_type.inspect} for message #{msg.trailing.inspect}"
+              return
+            end
+          end
 
           if target.starts_with?("#")
             matrix_room_id = client.channel_map.key_for?(target)
@@ -26,8 +43,8 @@ module AgentSmith
               room_id: matrix_room_id,
               event_type: "m.room.message",
               content: {
-                "msgtype" => "m.text",
-                "body"    => msg.trailing,
+                "msgtype" => is_ctcp && ctcp_type == "ACTION" ? "m.emote" : "m.text",
+                "body"    => text,
               }
             )
 

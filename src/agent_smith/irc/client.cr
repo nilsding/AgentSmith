@@ -157,10 +157,12 @@ module AgentSmith
             next if own_events.delete(event.event_id)
 
             # redacted messages do not have a body
-            next unless event.content.body
+            next unless event.content.body && event.content.msgtype
 
             # normal messages
-            event.content.body.not_nil!.each_line(chomp: false) do |line|
+            is_action = event.content.msgtype == "m.emote"
+            event.content.body.not_nil!.each_line(chomp: true) do |line|
+              line = "\x01ACTION #{line}\x01" if is_action
               Message::ServerToClient.new(
                 prefix: matrix2ident(event.sender),
                 command: "PRIVMSG",
