@@ -22,7 +22,11 @@ module AgentSmith
 
           if is_ctcp
             text = text.strip("\x01")
-            ctcp_type, text = text.split(" ", 2)
+            ctcp_type, text = if text.includes?(" ")
+                                text.split(" ", 2)
+                              else
+                                [text, ""]
+                              end
             ctcp_type = ctcp_type.upcase
 
             unless KNOWN_CTCP_TYPES.includes?(ctcp_type)
