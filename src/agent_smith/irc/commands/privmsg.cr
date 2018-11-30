@@ -49,9 +49,9 @@ module AgentSmith
               event_type: "m.room.message",
               content: {
                 "msgtype"        => is_ctcp && ctcp_type == "ACTION" ? "m.emote" : "m.text",
-                "body"           => text,
+                "body"           => TextFormatter.format_none(text),
                 "format"         => "org.matrix.custom.html",
-                "formatted_body" => TextFormatter.format(text),
+                "formatted_body" => TextFormatter.format_html(text),
               }
             )
 
