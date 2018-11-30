@@ -51,6 +51,8 @@ module AgentSmith
               topic: {type: String, nilable: true},
               name: {type: String, nilable: true},
               body: {type: String, nilable: true},
+              format: {type: String, nilable: true},
+              formatted_body: {type: String, nilable: true},
               msgtype: {type: String, nilable: true},
               url: {type: String, nilable: true}
             )

@@ -1,4 +1,5 @@
 require "./base"
+require "../text_formatter"
 
 module AgentSmith
   module IRC
@@ -47,8 +48,10 @@ module AgentSmith
               room_id: matrix_room_id,
               event_type: "m.room.message",
               content: {
-                "msgtype" => is_ctcp && ctcp_type == "ACTION" ? "m.emote" : "m.text",
-                "body"    => text,
+                "msgtype"        => is_ctcp && ctcp_type == "ACTION" ? "m.emote" : "m.text",
+                "body"           => text,
+                "format"         => "org.matrix.custom.html",
+                "formatted_body" => TextFormatter.format(text),
               }
             )
 
