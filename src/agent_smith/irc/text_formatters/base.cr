@@ -14,12 +14,17 @@ module AgentSmith
         ]
       end
 
+      # {foreground, background}
+      # values from -1 to 15
+      # -1 => unset
+      alias Color = {Int32, Int32}
+
       abstract class Base
         getter new_text = [] of String | Char,
-          format_stack = [] of Char
+          format_stack = [] of Char,
+          active_color : Color = {-1, -1}
 
-        @foreground_color = -1
-        @background_color = -1
+        @readahead = 0
 
         def initialize(@text : String)
         end
@@ -27,14 +32,14 @@ module AgentSmith
         def format
           @text += Format::Reset
 
-          @text.each_char do |char|
+          @text.each_char_with_index do |char, i|
+            next @readahead -= 1 if @readahead > 0
+
             case char
             when Format::Bold, Format::Italic, Format::Underline, Format::Color
-              handle_format(char)
+              handle_format(char, i)
             when Format::Reset
               reset_format
-              @foreground_color = -1
-              @background_color = -1
             else
               new_text << char
             end
@@ -43,13 +48,17 @@ module AgentSmith
           new_text.join("")
         end
 
-        def handle_format(format_char : Char)
-          return end_format(format_char) if format_stack.includes?(format_char)
-          begin_format(format_char)
+        def handle_format(format_char : Char, index : Int32)
+          return end_format(format_char, index) if format_stack.includes?(format_char)
+          begin_format(format_char, index)
         end
 
-        protected abstract def begin_format(format_char : Char)
-        protected abstract def end_format(format_char : Char)
+        def valid_color_param?(char : Char)
+          char.in_set?("0-9") || char == ','
+        end
+
+        protected abstract def begin_format(format_char : Char, index : Int32)
+        protected abstract def end_format(format_char : Char, index : Int32)
         protected abstract def reset_format
       end
     end
