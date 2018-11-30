@@ -6,6 +6,7 @@ describe AgentSmith::IRC::TextFormatter do
     texts = {
       "\u0002bold lol\u0002 not more bold \u001Funderline \u0002underline bold" => "<strong>bold lol</strong> not more bold <u>underline <strong>underline bold</strong></u>",
       "hahaha <script>&quot;geh&auml;ckt&quot;</script>"                        => "hahaha &lt;script>&amp;quot;geh&amp;auml;ckt&amp;quot;&lt;/script>",
+      "\u0002bold \u001Funderline bold\u0002 only underline"                    => "<strong>bold <u>underline bold</u></strong><u> only underline</u>",
     }
 
     texts.each do |irc_format, html_format|
