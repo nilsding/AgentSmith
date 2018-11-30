@@ -4,44 +4,25 @@ module AgentSmith
   module IRC
     module TextFormatters
       class Html < Base
-        getter new_text = [] of String | Char,
-          format_stack = [] of Char
-
         TAG_MAP = {
           Format::Bold      => "strong",
           Format::Italic    => "em",
           Format::Underline => "u",
+          Format::Color     => "font",
         }
 
         def format
           @text = @text.gsub("&", "&amp;")
           @text = @text.gsub("<", "&lt;")
-          @text += Format::Reset
-
-          @text.each_char do |char|
-            case char
-            when Format::Bold, Format::Italic, Format::Underline
-              handle_format(char)
-            when Format::Reset
-              reset_format
-              @foreground_color = -1
-              @background_color = -1
-            else
-              new_text << char
-            end
-          end
-
-          new_text.join("")
+          super
         end
 
-        private def handle_format(format_char : Char)
-          raise ArgumentError.new("unknown format char: #{format_char.inspect}") unless TAG_MAP.has_key?(format_char)
-
-          return end_format(format_char) if format_stack.includes?(format_char)
-          begin_format(format_char)
+        protected def begin_format(format_char : Char)
+          format_stack.push format_char
+          new_text << "<#{TAG_MAP[format_char]}>"
         end
 
-        private def end_format(format_char : Char)
+        protected def end_format(format_char : Char)
           popped = [] of Char
           while char = format_stack.pop?
             break if char == format_char
@@ -57,12 +38,7 @@ module AgentSmith
           end
         end
 
-        private def begin_format(format_char : Char)
-          format_stack.push format_char
-          new_text << "<#{TAG_MAP[format_char]}>"
-        end
-
-        private def reset_format
+        protected def reset_format
           while char = format_stack.pop?
             new_text << "</#{TAG_MAP[char]}>"
           end

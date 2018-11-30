@@ -4,8 +4,13 @@ module AgentSmith
   module IRC
     module TextFormatters
       class None < Base
-        def format
-          @text.delete { |c| Format::All.includes?(c) }
+        protected def begin_format(format_char : Char)
+        end
+
+        protected def end_format(format_char : Char)
+        end
+
+        protected def reset_format
         end
       end
     end
