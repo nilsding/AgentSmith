@@ -6,6 +6,10 @@ client (or bot).
 This is just a silly proof of concept for now, but it looks promising.  It is
 not yet recommended to use this in production.
 
+<p align="center">
+  <img src="https://github.com/nilsding/AgentSmith/blob/master/misc/img/kvirc_channel.png?raw=true" alt="Screenshot of KVIrc displaying a conversation within a Matrix room" />
+</p>
+
 ## Features
 
 - Communicate with rooms which have set a main alias
