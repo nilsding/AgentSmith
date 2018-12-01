@@ -60,6 +60,9 @@ module AgentSmith
                (char = @text[index + 1]) && valid_color_param?(char)
               format_stack.push format_char
               begin_color(index)
+            else
+              # colour disabled for good -> reset the current color
+              @active_color = {-1, -1}
             end
           end
 
@@ -73,6 +76,7 @@ module AgentSmith
           while char = format_stack.pop?
             new_text << "</#{TAG_MAP[char]}>"
           end
+          @active_color = {-1, -1}
         end
 
         private def begin_color(index)
@@ -90,6 +94,7 @@ module AgentSmith
           @readahead -= 1
 
           if raw_color_params.empty?
+            @active_color = {-1, -1}
             new_text << "<font>"
             return
           end
@@ -101,9 +106,9 @@ module AgentSmith
           end
           @active_color = case color_params.size
                           when 1
-                            {color_params[0], -1}
+                            {color_params[0] % 16, active_color[1]}
                           when 2
-                            {color_params[0], color_params[1]}
+                            {color_params[0] % 16, color_params[1] % 16}
                           else
                             {-1, -1}
                           end
