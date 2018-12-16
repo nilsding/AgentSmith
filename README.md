@@ -18,7 +18,7 @@ not yet recommended to use this in production.
 
 ### Features that still need to be done/would be nice to have
 
-- Rooms without main aliases (this perhaps also covers private messages)
+- ~~Rooms without main aliases (this perhaps also covers private messages)~~
 - Maybe support multiple homeservers at once
 - A nicer way to log in to your homeserver
 - Several IRC commands (e.g. `WHO`, `NAMES`, `LIST`)

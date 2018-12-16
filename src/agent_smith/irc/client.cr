@@ -1,6 +1,8 @@
 require "system"
 
+require "./channel"
 require "./codes"
+require "./user"
 require "../matrix/client"
 
 module AgentSmith
@@ -12,10 +14,7 @@ module AgentSmith
         username : String = "",
         realname : String = "",
         hostname : String = "",
-        # XXX: those should be probably in an own class.  just a POC for now
-        joined_channels = [] of String,
-        channel_topics = {} of String => String?,
-        channel_map = {} of String => String, # matrix_id => nice_matrix_id
+        joined_channels = {} of String => IRC::Channel,
         next_batch = "",
         own_events = [] of String
 
@@ -59,71 +58,72 @@ module AgentSmith
         response = response.not_nil!
         response.rooms.join.each do |matrix_room_name, room|
           room_events = room.state.events + room.timeline.events
-          room_name_event = find_event(room_events, "m.room.canonical_alias")
-          room_name = ""
 
-          if room_name_event
-            room_name = room_name_event.content.alias.not_nil!
-            channel_map[matrix_room_name] = room_name
+          channel = channel_for(matrix_room_name, room_events)
 
-            unless joined_channels.includes?(room_name)
-              Message::ServerToClient.new(
-                prefix: ident_s,
-                command: "JOIN",
-                params: [room_name]
-              ).send to: client
-              joined_channels << room_name
-            end
-
-            send_channel_topic(room_events, room_name)
-          end
-
-          next unless channel_map.has_key?(matrix_room_name)
-          room_name = channel_map[matrix_room_name]
-
-          send_channel_history(room_events, room_name)
+          send_channel_history(channel, room_events)
+          # send_names(channel) if next_batch.empty?
         end
 
         @next_batch = response.next_batch
+      end
+
+      private def channel_for(matrix_room_name : String, room_events) : IRC::Channel
+        return joined_channels[matrix_room_name] if joined_channels.has_key?(matrix_room_name)
+
+        joined_channels[matrix_room_name] = IRC::Channel.new(matrix_room_name).tap do |ch|
+          room_name_event = find_event(room_events, "m.room.canonical_alias")
+          ch.canonical_alias = room_name_event.content.alias.not_nil! if room_name_event
+
+          Message::ServerToClient.new(
+            prefix: ident_s,
+            command: "JOIN",
+            params: [ch.room_name]
+          ).send to: client
+
+          send_channel_topic(ch, room_events)
+        end
       end
 
       private def find_event(events : Array(Matrix::Entities::SyncResponse::Room::Event), event_type)
         events.find { |event| event.type == event_type }
       end
 
-      private def send_channel_topic(room_events, room_name)
+      private def send_channel_topic(channel, room_events)
         channel_topic_event = find_event(room_events, "m.room.topic")
 
         unless channel_topic_event
-          unless channel_topics.fetch(room_name, "") == nil
+          if channel.topic != nil
             Message::ServerToClient.new(
               prefix: System.hostname,
               command: Codes::RPL_NOTOPIC,
-              params: [nickname, room_name],
+              params: [nickname, channel.room_name],
               trailing: "No topic is set"
             ).send to: client
           end
-          channel_topics[room_name] = nil
+
+          channel.topic = nil
           return
         end
 
         channel_topic = channel_topic_event.content.topic.not_nil!
-        unless channel_topics.fetch(room_name, nil) == channel_topic
+        unless channel.topic == channel_topic
           Message::ServerToClient.new(
             prefix: System.hostname,
             command: Codes::RPL_TOPIC,
-            params: [nickname, room_name],
+            params: [nickname, channel.room_name],
             trailing: channel_topic
           ).send to: client
+
+          channel.topic = channel_topic
         end
-        channel_topics[room_name] = channel_topic
       end
 
-      private def send_channel_history(room_events, room_name)
+      private def send_channel_history(channel, room_events)
         Message::ServerToClient.new(
           prefix: "*AgentSmith!AgentSmith@#{System.hostname}",
           command: "PRIVMSG",
-          params: [room_name],
+          params: [channel.room_name],
           trailing: "*** Playing back messages..."
         ).send to: client if next_batch.empty?
 
@@ -143,9 +143,9 @@ module AgentSmith
                 "       \x02Download:\x02 #{download_url}",
               ].each do |line|
                 Message::ServerToClient.new(
-                  prefix: matrix2ident(event.sender),
+                  prefix: User.matrix_id_to_ident(event.sender),
                   command: "PRIVMSG",
-                  params: [room_name],
+                  params: [channel.room_name],
                   trailing: line
                 ).send to: client
               end
@@ -164,19 +164,21 @@ module AgentSmith
             event.content.body.not_nil!.each_line(chomp: true) do |line|
               line = "\x01ACTION #{line}\x01" if is_action
               Message::ServerToClient.new(
-                prefix: matrix2ident(event.sender),
+                prefix: User.matrix_id_to_ident(event.sender),
                 command: "PRIVMSG",
-                params: [room_name],
+                params: [channel.room_name],
                 trailing: line
               ).send to: client
             end
           when "m.room.member"
+            u = User.new(event.sender)
             case event.membership
             when "join"
+              channel.members << u unless channel.members.includes?(u)
               Message::ServerToClient.new(
-                prefix: matrix2ident(event.sender),
+                prefix: User.matrix_id_to_ident(event.sender),
                 command: "JOIN",
-                trailing: room_name
+                trailing: channel.room_name
               ).send to: client
             else
               Application.logger.warn "unhandled m.room.member membership type #{event.membership.inspect}"
@@ -189,14 +191,9 @@ module AgentSmith
         Message::ServerToClient.new(
           prefix: "*AgentSmith!AgentSmith@#{System.hostname}",
           command: "PRIVMSG",
-          params: [room_name],
+          params: [channel.room_name],
           trailing: "*** Playback done."
         ).send to: client if next_batch.empty?
-      end
-
-      # @nilsding:rrerr.net => nilsding!nilsding@rrerr.net
-      private def matrix2ident(matrix_id)
-        matrix_id.sub(/@([^:]+):(.+)/, "\\1!\\1@\\2", backreferences: true)
       end
 
       forward_missing_to @client

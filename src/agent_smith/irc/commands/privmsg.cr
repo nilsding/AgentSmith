@@ -36,12 +36,14 @@ module AgentSmith
             end
           end
 
-          if target.starts_with?("#")
-            matrix_room_id = client.channel_map.key_for?(target)
-            unless matrix_room_id
-              Application.logger.warn "PRIVMSG: no matrix room id found for #{target.inspect}"
+          if target.starts_with?("#") || target.starts_with?("!")
+            channel_tuple = client.joined_channels.find { |mid, ch| ch.room_name == target }
+            unless channel_tuple
+              Application.logger.warn "PRIVMSG: no channel object found for #{target.inspect}"
               return
             end
+
+            matrix_room_id, channel = channel_tuple
 
             ok, response = client.@matrix_client.room_send(
               ENV["MATRIX_ACCESS_TOKEN"],
