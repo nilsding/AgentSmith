@@ -28,10 +28,11 @@ module AgentSmith
               server = is_self?(user) ? System.hostname : user.hostname
               hopcount = is_self?(user) ? 0 : 1
               realname = is_self?(user) ? client.realname : user.nickname
+              mode = "H#{channel.power_level_mode_user_char(user)}"
               Message::ServerToClient.new(
                 prefix: System.hostname,
                 command: Codes::RPL_WHOREPLY,
-                params: [client.nickname, target, username, hostname, server, user.nickname, "H"],
+                params: [client.nickname, target, username, hostname, server, user.nickname, mode],
                 trailing: "#{hopcount} #{realname}"
               ).send to: client
             end

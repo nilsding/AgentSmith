@@ -172,6 +172,13 @@ module AgentSmith
                 trailing: line
               ).send to: client
             end
+          when "m.room.power_levels"
+            next unless event.content.users
+            event.content.users.not_nil!.each do |matrix_user, level|
+              user = channel.members.find { |u| u.matrix_id == matrix_user }
+              next unless user
+              channel.power_levels[user] = level
+            end
           when "m.room.member"
             u = User.new(event.sender)
             case event.membership || event.content.membership

@@ -22,8 +22,8 @@ not yet recommended to use this in production.
 - Maybe support multiple homeservers at once
 - A nicer way to log in to your homeserver
 - Several IRC commands (e.g. ~~`WHO`~~, ~~`NAMES`~~, `LIST`)
-- Map permissions to IRC channel modes (e.g. Admin (100) -> `+o`, Moderator (50)
-  -> `+h` etc.)
+- ~~Map permissions to IRC channel modes (e.g. Admin (100) -> `+o`, Moderator (50)
+  -> `+h` etc.)~~
 - File uploads (DCC?)
 - TLS
 

@@ -34,7 +34,9 @@ module AgentSmith
               prefix: System.hostname,
               command: Codes::RPL_NAMREPLY,
               params: [client.nickname, "=", channel.room_name],
-              trailing: users.map(&.nickname).join(" ")
+              trailing: users.map do |user|
+                [channel.power_level_mode_user_char(user), user.nickname].join("")
+              end.join(" ")
             ).send to: client
           end
 

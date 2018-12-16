@@ -39,13 +39,13 @@ module AgentSmith
           Message::ServerToClient.new(
             prefix: System.hostname,
             command: Codes::RPL_MYINFO,
-            params: [client.nickname, System.hostname, "AgentSmith-#{AgentSmith::VERSION}", "iw", "nt"]
+            params: [client.nickname, System.hostname, "AgentSmith-#{AgentSmith::VERSION}", "iw", "nt", "ohv"]
           ).send to: client
 
           Message::ServerToClient.new(
             prefix: System.hostname,
             command: Codes::RPL_BOUNCE,
-            params: [client.nickname, "NETWORK=AgentSmith", "TOPICLEN=666"],
+            params: [client.nickname, "NETWORK=AgentSmith", "TOPICLEN=666", "PREFIX=(ohv)@%+"],
             trailing: "are supported by this server"
           ).send to: client
         end
