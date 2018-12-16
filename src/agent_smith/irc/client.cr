@@ -16,7 +16,8 @@ module AgentSmith
         hostname : String = "",
         joined_channels = {} of String => IRC::Channel,
         next_batch = "",
-        own_events = [] of String
+        own_events = [] of String,
+        should_close = false
 
       def initialize(@client)
         @hostname = @client.remote_address.address

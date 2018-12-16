@@ -31,6 +31,7 @@ module AgentSmith
         while line = client.gets
           Application.logger.debug("#{client.remote_address} -> #{line.inspect}")
           handle line, from: client
+          break if client.should_close
         end
 
         client.close
