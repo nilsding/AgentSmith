@@ -180,7 +180,7 @@ module AgentSmith
                 prefix: User.matrix_id_to_ident(event.sender),
                 command: "JOIN",
                 trailing: channel.room_name
-              ).send to: client
+              ).send to: client unless next_batch.empty?
             else
               Application.logger.warn "unhandled m.room.member membership type #{event.membership.inspect}"
             end
@@ -198,21 +198,7 @@ module AgentSmith
       end
 
       private def send_names(channel)
-        channel.members.each_slice(8) do |users|
-          Message::ServerToClient.new(
-            prefix: System.hostname,
-            command: Codes::RPL_NAMREPLY,
-            params: [nickname, "=", channel.room_name],
-            trailing: users.map(&.nickname).join(" ")
-          ).send to: client
-        end
-
-        Message::ServerToClient.new(
-          prefix: System.hostname,
-          command: Codes::RPL_ENDOFNAMES,
-          params: [nickname, channel.room_name],
-          trailing: "End of /NAMES list."
-        ).send to: client
+        Commands::Names.send_names(self, channel)
       end
 
       forward_missing_to @client
