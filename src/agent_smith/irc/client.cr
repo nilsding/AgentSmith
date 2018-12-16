@@ -15,6 +15,7 @@ module AgentSmith
         realname : String = "",
         hostname : String = "",
         joined_channels = {} of String => IRC::Channel,
+        known_users = {} of String => User,
         next_batch = "",
         own_events = [] of String,
         should_close = false
@@ -57,6 +58,10 @@ module AgentSmith
         end
 
         response = response.not_nil!
+        response.presence.each do |presence_event|
+          user = fetch_known_user(presence_event.sender)
+          user.presence = presence_event.content.currently_active
+        end
         response.rooms.join.each do |matrix_room_name, room|
           room_events = room.state.events + room.timeline.events
 
@@ -180,7 +185,7 @@ module AgentSmith
               channel.power_levels[user] = level
             end
           when "m.room.member"
-            u = User.new(event.sender)
+            u = fetch_knwon_user(event.sender)
             case event.membership || event.content.membership
             when "join"
               channel.members << u unless channel.members.includes?(u)
@@ -203,6 +208,10 @@ module AgentSmith
           params: [channel.room_name],
           trailing: "*** Playback done."
         ).send to: client if next_batch.empty?
+      end
+
+      private def fetch_known_user(matrix_user)
+        known_users.fetch(matrix_user) { known_users[matrix_user] = User.new(matrix_user) }
       end
 
       private def send_names(channel)

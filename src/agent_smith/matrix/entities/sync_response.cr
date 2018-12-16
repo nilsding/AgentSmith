@@ -6,8 +6,29 @@ module AgentSmith
       class SyncResponse
         JSON.mapping(
           next_batch: String,
+          presence: SyncResponse::Presence,
           rooms: SyncResponse::Rooms
         )
+
+        class Presence
+          JSON.mapping(
+            events: Array(PresenceEvent)
+          )
+        end
+
+        class PresenceEvent
+          JSON.mapping(
+            sender: String,
+            type: String,
+            content: PresenceEventContent
+          )
+        end
+
+        class PresenceEventContent
+          JSON.mapping(
+            currently_active: Bool
+          )
+        end
 
         class Rooms
           JSON.mapping(
