@@ -9,6 +9,7 @@ module AgentSmith
         members = Set(User).new
 
       def initialize(@matrix_name)
+        @canonical_alias = @matrix_name.sub(/^!/, "#")
       end
 
       # returns the room name
