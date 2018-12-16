@@ -4,10 +4,12 @@ module AgentSmith
       include Comparable(User)
 
       getter matrix_id : String,
-        ident_s : String
+        ident_s : String,
+        nickname : String
 
       def initialize(@matrix_id)
         @ident_s = self.class.matrix_id_to_ident(@matrix_id)
+        @nickname = self.class.matrix_id_to_nickname(@matrix_id)
       end
 
       def_hash @matrix_id
@@ -16,6 +18,12 @@ module AgentSmith
       # `nilsding!nilsding@rrerr.net`
       def self.matrix_id_to_ident(matrix_id) : String
         matrix_id.sub(/@([^:]+):(.+)/, "\\1!\\1@\\2", backreferences: true)
+      end
+
+      # converts a matrix id in the format of `@nilsding:rrerr.net` to
+      # `nilsding`
+      def self.matrix_id_to_nickname(matrix_id) : String
+        matrix_id.sub(/@([^:]+):.+/, "\\1", backreferences: true)
       end
 
       def <=>(other)

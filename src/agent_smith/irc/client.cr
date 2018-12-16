@@ -62,7 +62,7 @@ module AgentSmith
           channel = channel_for(matrix_room_name, room_events)
 
           send_channel_history(channel, room_events)
-          # send_names(channel) if next_batch.empty?
+          send_names(channel) if next_batch.empty?
         end
 
         @next_batch = response.next_batch
@@ -195,6 +195,24 @@ module AgentSmith
           params: [channel.room_name],
           trailing: "*** Playback done."
         ).send to: client if next_batch.empty?
+      end
+
+      private def send_names(channel)
+        channel.members.each_slice(8) do |users|
+          Message::ServerToClient.new(
+            prefix: System.hostname,
+            command: Codes::RPL_NAMREPLY,
+            params: [nickname, "=", channel.room_name],
+            trailing: users.map(&.nickname).join(" ")
+          ).send to: client
+        end
+
+        Message::ServerToClient.new(
+          prefix: System.hostname,
+          command: Codes::RPL_ENDOFNAMES,
+          params: [nickname, channel.room_name],
+          trailing: "End of /NAMES list."
+        ).send to: client
       end
 
       forward_missing_to @client
