@@ -36,18 +36,13 @@ module AgentSmith
             end
           end
 
-          if target.starts_with?("#") || target.starts_with?("!")
-            channel_tuple = client.joined_channels.find { |mid, ch| ch.room_name == target }
-            unless channel_tuple
-              Application.logger.warn "PRIVMSG: no channel object found for #{target.inspect}"
-              return
-            end
-
-            matrix_room_id, channel = channel_tuple
+          if is_channel?(target)
+            channel = find_channel(target)
+            return unless channel
 
             ok, response = client.@matrix_client.room_send(
               ENV["MATRIX_ACCESS_TOKEN"],
-              room_id: matrix_room_id,
+              room_id: channel.matrix_name,
               event_type: "m.room.message",
               content: {
                 "msgtype"        => is_ctcp && ctcp_type == "ACTION" ? "m.emote" : "m.text",

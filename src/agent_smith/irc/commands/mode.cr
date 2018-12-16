@@ -12,7 +12,7 @@ module AgentSmith
             return
           end
 
-          if msg.params.first.starts_with?("#")
+          if is_channel?(msg.params.first)
             Message::ServerToClient.new(
               prefix: System.hostname,
               command: Codes::RPL_CHANNELMODEIS,
