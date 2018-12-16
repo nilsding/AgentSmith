@@ -173,7 +173,7 @@ module AgentSmith
             end
           when "m.room.member"
             u = User.new(event.sender)
-            case event.membership
+            case event.membership || event.content.membership
             when "join"
               channel.members << u unless channel.members.includes?(u)
               Message::ServerToClient.new(

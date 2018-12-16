@@ -54,7 +54,8 @@ module AgentSmith
               format: {type: String, nilable: true},
               formatted_body: {type: String, nilable: true},
               msgtype: {type: String, nilable: true},
-              url: {type: String, nilable: true}
+              url: {type: String, nilable: true},
+              membership: {type: String, nilable: true}
             )
           end
 
