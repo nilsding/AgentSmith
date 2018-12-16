@@ -162,6 +162,7 @@ module AgentSmith
             # normal messages
             is_action = event.content.msgtype == "m.emote"
             event.content.body.not_nil!.each_line(chomp: true) do |line|
+              line = " " if line.empty?
               line = "\x01ACTION #{line}\x01" if is_action
               Message::ServerToClient.new(
                 prefix: User.matrix_id_to_ident(event.sender),
