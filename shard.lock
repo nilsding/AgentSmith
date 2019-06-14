@@ -2,7 +2,7 @@ version: 1.0
 shards:
   crest:
     github: mamantoha/crest
-    version: 0.17.0
+    version: 0.20.0
 
   secrets:
     github: faustinoaq/secrets
